@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project
+	name="MCPTool"
+	default="mcptool-chennels" >
+	<!--
+         The local.properties file is created and updated by the 'android' tool.
+         It contains the path to the SDK. It should *NOT* be checked into
+         Version Control Systems.	-->
+	<property file="local.properties" />
+	<!--
+         if sdk.dir was not set from one of the property file, then
+         get it from the ANDROID_HOME env var.
+         This must be done before we load project.properties since
+         the proguard config can use sdk.dir	-->
+	<property environment="env" />
+	<condition
+		property="sdk.dir"
+		value="${env.ANDROID_HOME}" >
+		<isset property="env.ANDROID_HOME" />
+	</condition>
+	<!-- quick check on sdk.dir -->
+	<fail
+		message="sdk.dir is missing. Make sure to generate local.properties using &apos;android update project&apos; or to inject it through the ANDROID_HOME environment variable."
+		unless="sdk.dir" />
+	<!--
+         Import the actual build file.
+
+         To customize existing targets, there are two options:
+         - Customize only one target:
+             - copy/paste the target into this file, *before* the
+               <import> task.
+             - customize it to your needs.
+         - Customize the whole content of build.xml
+             - copy/paste the content of the rules files (minus the top node)
+               into this file, replacing the <import> task.
+             - customize to your needs.
+
+         ***********************
+         ****** IMPORTANT ******
+         ***********************
+         In all cases you must update the value of version-tag below to read 'custom' instead of an integer,
+         in order to avoid having your file be overridden by tools such as "android update project"	-->
+	<!-- version-tag: 1 -->
+	<import file="${sdk.dir}/tools/ant/build.xml" />
+	<target name="mcptool-chennels" >
+		<if>
+			<condition>
+				<!-- jenkins's File Parameter -->
+				<resourceexists>
+					<file file="build.mcptool.apk" />
+				</resourceexists>
+			</condition>
+			<then>
+				<move
+					file="build.mcptool.apk"
+					tofile="${build.mcptool.apk}" />
+			</then>
+		</if>
+		<!-- find location of build tools -->
+		<getbuildtools
+			name="android.build.tools.dir"
+			verbose="${verbose}" />
+		<property
+			name="temp.file.out.apkinfo"
+			value="./apkinfo.txt" />
+		<exec
+			executable="${android.build.tools.dir}/aapt${exe}"
+			output="${temp.file.out.apkinfo}" >
+			<arg line="dump badging ${build.mcptool.apk}" />
+		</exec>
+		<loadfile
+			property="temp.out.apkinfo"
+			srcFile="${temp.file.out.apkinfo}" />
+		<delete
+			file="${temp.file.out.apkinfo}"
+			verbose="${verbose}" />
+		<taskdef
+			name="propertyregex"
+			classname="net.sf.antcontrib.property.RegexTask"
+			classpath="./ant-contrib-1.0b3.jar" />
+		<propertyregex
+			input="${temp.out.apkinfo}"
+			property="build.mcptool.version.name"
+			regexp="versionName=&apos;(.*)&apos; "
+			select="\1" />
+		<echo message="build.mcptool.version.name: ${build.mcptool.version.name}" />
+		<property
+			name="build.mcptool.outdir"
+			location="./release/V${build.mcptool.version.name}/channels" />
+		<mkdir dir="${build.mcptool.outdir}" />
+		<echo message="build.mcptool.outdir: ${build.mcptool.outdir}" />
+		<exec executable="java" >
+			<arg line="-jar ./MCPTool-1.0.jar -path ${build.mcptool.apk} -outdir ${build.mcptool.outdir} -contents ${build.mcptool.channels} -password ${build.mcptool.password}" />
+		</exec>
+	</target>
+</project>
