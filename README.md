@@ -10,6 +10,10 @@ Multi channel package tool 多渠道打包工具
 	利用的是Zip文件的数据结构特点，在文件的末尾写入任意数据，都不会影响Zip文件的正确显示和解包（apk文件就是zip文件格式）；
 	所以该工具不需要对apk文件解包和重新签名即可完成多渠道自动打包，高效速度快，无兼容性问题；
 	比其他工具对apk解包再替换AndroidManifest.xml文件中的meta-data数据要高效安全得多（如：https://github.com/umeng/umeng-muti-channel-build-tool）；
+	
+	另外美团的渠道包方案：
+	美团Android自动化之旅—生成渠道包（需要解包）（http://tech.meituan.com/mt-apk-packaging.html）
+	美团Android自动化之旅—适配渠道包（Gradle flavor解决第三方SDK适配）（http://tech.meituan.com/mt-apk-adaptation.html）
 
 ## 如何使用
 	1、命令行使用说明：
