@@ -342,7 +342,7 @@ public class MCPTool {
 			File path = new File(argsMap.get(cmdPath));
 			String parent = path.getParent() == null ? "./" : path.getParent();
 			File outdir = new File(argsMap.containsKey(cmdOutdir) ? argsMap.get(cmdOutdir) : parent);
-			String[] contents = argsMap.get(cmdContents).split(";");
+			String[] contents = argsMap.containsKey(cmdContents) ? argsMap.get(cmdContents).split(";") : null;
 			String password = argsMap.get(cmdPassword);
 			String version = argsMap.get(cmdVersion);
 			if (version != null) {

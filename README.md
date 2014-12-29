@@ -27,7 +27,7 @@ Multi channel package tool 多渠道打包工具
 	写入：java -jar MCPTool.jar -path D:/test.apk -outdir ./ -contents googleplay;m360; -password 12345678
 	读取：java -jar MCPTool.jar -path D:/test.apk -password 12345678
 	
-	2、Java代码中读取写入的数据：
+	2、Android代码中读取写入的渠道号（context.getPackageCodePath()可以读取已安装apk在data/app/目录下的路径）：
 	导入MCPTool.jar中的MCPTool类，MCPTool.readContent(path, password)读出写入的渠道号；
 	public static String getChannelId(Context context, String mcptoolPassword, String defValue) {
 		String content = MCPTool.readContent(new File(context.getPackageCodePath()), mcptoolPassword);
