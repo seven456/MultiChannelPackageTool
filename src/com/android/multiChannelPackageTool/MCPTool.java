@@ -333,6 +333,7 @@ public class MCPTool {
 				} else {
 					argsMap.put(args[i], args[i + 1]);
 				}
+				
 			}
 		}
 		System.out.println("argsMap = " + argsMap);
