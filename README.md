@@ -8,12 +8,23 @@ Android 多渠道打包工具 (Android Multi channel package tool)
 
 ## 该工具的原理
 	利用的是Zip文件的数据结构特点，在文件的末尾写入任意数据，都不会影响Zip文件的正确显示和解包（apk文件就是zip文件格式）；
-	所以该工具不需要对apk文件解包和重新签名即可完成多渠道自动打包，高效速度快，无兼容性问题；
-	比其他工具对apk解包再替换AndroidManifest.xml文件中的meta-data数据要高效安全得多（如：https://github.com/umeng/umeng-muti-channel-build-tool）；
-	
-	另外美团的渠道包方案：
-	美团Android自动化之旅—生成渠道包（需要解包）（http://tech.meituan.com/mt-apk-packaging.html）
+	所以该工具不需要对apk文件解压缩和重新签名即可完成多渠道自动打包，高效速度快，无兼容性问题；
+	另外美团的适配渠道包方案（不同的渠道嵌入不同的SDK）：
 	美团Android自动化之旅—适配渠道包（Gradle flavor解决内嵌第三方SDK适配）（http://tech.meituan.com/mt-apk-adaptation.html）
+
+## 与现有多渠道打包工具的对比
+	友盟（https://github.com/umeng/umeng-muti-channel-build-tool）
+		打包：解压apk文件 -> 替换AndroidManifest.xml中的meta-data -> 压缩apk文件 -> 签名
+		读取渠道号：直接通过Android的API读取meta-data
+		特点：需要解压缩、压缩、重签名耗费时间较多，重签名会导致apk包在运行时有兼容性问题
+	美团（http://tech.meituan.com/mt-apk-packaging.html）
+		打包：解压apk文件 -> META-INF目录下创建一个以渠道号为文件名的空文件 -> 压缩apk文件
+		读取渠道号：解压已安装的data/app/<package>.apk -> 读取以渠道号为文件名的空文件的文件名
+		特点：比友盟高效点，只有解压缩和压缩，没有签名，兼容性也比较好，但是读取渠道号需要解压缩apk，速度比较慢
+	我自己
+		打包：直接写入渠道号到apk文件的末尾
+		读取渠道号：直接读取data/app/<package>.apk文件末尾的渠道号
+		特点：没有解压缩、压缩、重签名，没有兼容性问题，速度最快
 
 ## 如何使用
 	1、命令行使用说明：
