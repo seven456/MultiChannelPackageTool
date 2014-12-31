@@ -47,10 +47,10 @@ Android 多渠道打包工具 (Android Multi channel package tool)
 	
 	2、Android代码中读取写入的渠道号（context.getPackageCodePath()可以读取已安装apk在data/app/目录下的路径）：
 	导入MCPTool.jar中的MCPTool类，MCPTool.readContent(path, password)读出写入的渠道号；
-	public static String getChannelId(Context context, String mcptoolPassword, String defValue) {
-		String content = MCPTool.readContent(new File(context.getPackageCodePath()), mcptoolPassword);
-		return TextUtils.isEmpty(content) ? defValue : content;
-	}
+		public static String getChannelId(Context context, String mcptoolPassword, String defValue) {
+			String content = MCPTool.readContent(new File(context.getPackageCodePath()), mcptoolPassword);
+			return TextUtils.isEmpty(content) ? defValue : content;
+		}
 	
 	3、jenkins、hudson、ant使用说明：
 	请看MultiChannelPackageTool\build-ant\MCPTool\build.xml文件；
