@@ -125,6 +125,31 @@ public class MCPTool {
 		}
 		return null;
 	}
+	
+	/**
+	 * Android平台读取渠道号
+	 * @param context Android中的android.content.Context对象
+	 * @param mcptoolPassword mcptool解密密钥
+	 * @param defValue 读取不到时用该值作为默认值
+	 * @return
+	 */
+	public static String getChannelId(Object context, String mcptoolPassword, String defValue) {
+		String content = MCPTool.readContent(new File(getPackageCodePath(context)), mcptoolPassword);
+		return content == null || content.length() == 0 ? defValue : content;
+	}
+
+	/**
+	 * 获取已安装apk文件的存储路径（这里使用反射，因为MCPTool项目本身不需要导入Android的运行库）
+	 * @param context Android中的Context对象
+	 * @return
+	 */
+	private static String getPackageCodePath(Object context) {
+		try {
+			return (String) context.getClass().getMethod("getPackageCodePath").invoke(context);
+		} catch (Exception ignore) {
+		}
+		return null;
+	}
 
 	/**
 	 * 读取数据
