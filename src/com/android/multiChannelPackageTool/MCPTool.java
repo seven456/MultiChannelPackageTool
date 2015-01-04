@@ -343,7 +343,7 @@ public class MCPTool {
 		String help = "用法：java -jar MCPTool.jar [" + cmdPath + "] [arg0] [" + cmdOutdir + "] [arg1] [" + cmdContents + "] [arg2] [" + cmdPassword + "] [arg3]"
 				+ "\n" + cmdPath + "		APK文件路径"
 				+ "\n" + cmdOutdir + "		输出路径（可选），默认输出到APK文件同一级目录"
-				+ "\n" + cmdContents + "	写入内容集合，多个内容之间用“;”分割，如：googleplay;m360; 当没有" + cmdContents + "”参数时输出已有文件中的contents"
+				+ "\n" + cmdContents + "	写入内容集合，多个内容之间用“;”分割（linux平台请在“;”前加“\\”转义符），如：googleplay;m360; 当没有" + cmdContents + "”参数时输出已有文件中的contents"
 				+ "\n" + cmdPassword + "	加密密钥（可选），长度8位以上，如果没有该参数，不加密"
 				+ "\n" + cmdVersion + "	显示版本号"
 				+ "\n例如："
