@@ -358,53 +358,55 @@ public class MCPTool {
 				+ "\n" + cmdOutdir + "		输出路径（可选），默认输出到APK文件同一级目录"
 				+ "\n" + cmdContents + "	写入内容集合，多个内容之间用“;”分割（linux平台请在“;”前加“\\”转义符），如：googleplay;m360; 当没有" + cmdContents + "”参数时输出已有文件中的contents"
 				+ "\n" + cmdPassword + "	加密密钥（可选），长度8位以上，如果没有该参数，不加密"
-				+ "\n" + cmdVersion + "	显示版本号"
+				+ "\n" + cmdVersion + "	显示MCPTool版本号"
 				+ "\n例如："
 				+ "\n写入：java -jar MCPTool.jar -path D:/test.apk -outdir ./ -contents googleplay;m360; -password 12345678"
 				+ "\n读取：java -jar MCPTool.jar -path D:/test.apk -password 12345678";
 		
-		Map<String, String> argsMap = new LinkedHashMap<String, String>();
-		if (args.length > 0) {
-			for (int i = 0; i < args.length; i += 2) {
-				if (args[i + 1].startsWith("-")) {
-					throw new IllegalStateException("args is error, help: \n" + help);
-				} else {
-					argsMap.put(args[i], args[i + 1]);
-				}
-				
-			}
-		}
-		System.out.println("argsMap = " + argsMap);
 		if (args.length == 0 || args[0] == null || args[0].trim().length() == 0) {
 			System.out.println(help);
 		} else {
-			File path = new File(argsMap.get(cmdPath));
-			String parent = path.getParent() == null ? "./" : path.getParent();
-			File outdir = new File(argsMap.containsKey(cmdOutdir) ? argsMap.get(cmdOutdir) : parent);
-			String[] contents = argsMap.containsKey(cmdContents) ? argsMap.get(cmdContents).split(";") : null;
-			String password = argsMap.get(cmdPassword);
-			String version = argsMap.get(cmdVersion);
-			if (version != null) {
-				System.out.println("version: " + version);
-			} else if (path != null) {
-				System.out.println("path: " + path);
-				System.out.println("outdir: " + outdir);
-				if (contents != null && contents.length > 0) {
-					System.out.println("contents: " + Arrays.toString(contents));
-				}
-				System.out.println("password: " + password);
-				if (contents == null || contents.length == 0) {
-					System.out.println("content: " + readContent(path, password));
+			if (args.length > 0) {
+				if (args.length == 1 && cmdVersion.equals(args[0])) {
+					System.out.println("version: " + VERSION_10);
 				} else {
-					String fileName = path.getName();
-					int dot = fileName.lastIndexOf(".");
-					String prefix = fileName.substring(0, dot);
-					String suffix = fileName.substring(dot);
-					for (String content : contents) {
-						File target = new File(outdir, prefix + "_" + content + suffix);
-						if (nioTransferCopy(path, target)) {
-							write(target, content, password);
-							System.out.println("Write finish, [" + content + "] to [" + target + "]");
+					Map<String, String> argsMap = new LinkedHashMap<String, String>();
+					for (int i = 0; i < args.length; i += 2) {
+						if (i + 1 < args.length) {
+							if (args[i + 1].startsWith("-")) {
+								throw new IllegalStateException("args is error, help: \n" + help);
+							} else {
+								argsMap.put(args[i], args[i + 1]);
+							}
+						}
+					}
+					System.out.println("argsMap = " + argsMap);
+					File path = argsMap.containsKey(cmdPath) ? new File(argsMap.get(cmdPath)) : null;
+					String parent = path == null? null : (path.getParent() == null ? "./" : path.getParent());
+					File outdir = parent == null ? null : new File(argsMap.containsKey(cmdOutdir) ? argsMap.get(cmdOutdir) : parent);
+					String[] contents = argsMap.containsKey(cmdContents) ? argsMap.get(cmdContents).split(";") : null;
+					String password = argsMap.get(cmdPassword);
+					if (path != null) {
+						System.out.println("path: " + path);
+						System.out.println("outdir: " + outdir);
+						if (contents != null && contents.length > 0) {
+							System.out.println("contents: " + Arrays.toString(contents));
+						}
+						System.out.println("password: " + password);
+						if (contents == null || contents.length == 0) {
+							System.out.println("content: " + readContent(path, password));
+						} else {
+							String fileName = path.getName();
+							int dot = fileName.lastIndexOf(".");
+							String prefix = fileName.substring(0, dot);
+							String suffix = fileName.substring(dot);
+							for (String content : contents) {
+								File target = new File(outdir, prefix + "_" + content + suffix);
+								if (nioTransferCopy(path, target)) {
+									write(target, content, password);
+									System.out.println("Write finish, [" + content + "] to [" + target + "]");
+								}
+							}
 						}
 					}
 				}
