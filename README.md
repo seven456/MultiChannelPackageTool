@@ -1,5 +1,5 @@
 # MultiChannelPackageTool
-Android 多渠道打包工具 (Android Multi channel package tool)
+Android Multi channel package tool （安卓多渠道打包工具）
 
 ## 为什么需要这个工具
 	国内应用市场百花争鸣，各自都占有自己的一席之地，这给开发者带来了麻烦；
