@@ -9,6 +9,7 @@ Android Multi channel package tool （安卓多渠道打包工具）
 ## 该工具的原理
 	利用的是Zip文件“可以添加comment（注释）”的数据结构特点，在文件的末尾写入任意数据，而不用重新解压zip文件（apk文件就是zip文件格式）；
 	所以该工具不需要对apk文件解压缩和重新签名即可完成多渠道自动打包，高效速度快，无兼容性问题；
+	打包速度：5M的apk，1秒种能打300个；
 	
 	另外美团的适配渠道包方案（不同的渠道嵌入不同的SDK）：
 	美团Android自动化之旅—适配渠道包（Gradle flavor解决内嵌第三方SDK适配）（http://tech.meituan.com/mt-apk-adaptation.html）

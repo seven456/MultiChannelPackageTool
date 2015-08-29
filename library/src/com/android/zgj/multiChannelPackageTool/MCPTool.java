@@ -304,6 +304,10 @@ public class MCPTool {
 		FileInputStream inStream = null;
 		FileOutputStream outStream = null;
 		try {
+			File parent = target.getParentFile();
+			if (!parent.exists()) {
+				parent.mkdirs();
+			}
 			inStream = new FileInputStream(source);
 			outStream = new FileOutputStream(target);
 			in = inStream.getChannel();
@@ -352,10 +356,11 @@ public class MCPTool {
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
-//		args = "-path D:/111.zip -outdir D:/ -contents googleplay;m360; -password 12345678".split(" ");
+//		args = "-path D:/111.apk -outdir D:/111/ -contents googleplay;m360; -password 12345678".split(" ");
 //		args = "-version".split(" ");
-//		args = "-path D:/111_m360.zip -password 12345678".split(" ");
-		
+//		args = "-path D:/111_m360.apk -password 12345678".split(" ");
+
+		long time = System.currentTimeMillis();
 		String cmdPath  = "-path";
 		String cmdOutdir  = "-outdir";
 		String cmdContents  = "-contents";
@@ -419,5 +424,6 @@ public class MCPTool {
 				}
 			}
 		}
+		System.out.println("time：" + (System.currentTimeMillis() - time));
 	}
 }
