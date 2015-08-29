@@ -90,7 +90,7 @@
 		<mkdir dir="${build.mcptool.outdir}" />
 		<echo message="build.mcptool.outdir: ${build.mcptool.outdir}" />
 		<exec executable="java" >
-			<arg line="-jar ./MCPTool-1.0.jar -path ${build.mcptool.apk} -outdir ${build.mcptool.outdir} -contents ${build.mcptool.channels} -password ${build.mcptool.password}" />
+			<arg line="-jar ./MCPTool-1.1.jar -path ${build.mcptool.apk} -outdir ${build.mcptool.outdir} -contents ${build.mcptool.channels} -password ${build.mcptool.password}" />
 		</exec>
 	</target>
 </project>

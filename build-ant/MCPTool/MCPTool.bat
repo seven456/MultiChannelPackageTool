@@ -24,7 +24,7 @@ cd /d %apkFile%\..
 
 
 echo .........MCPTool..........
-java -jar MCPTool-1.0.jar -path "%apkFile%" -outdir ./ -contents googleplay;m360;wandoujia;tencent;baidu;taobao;xiaomi; -password 12345678
+java -jar MCPTool-1.1.jar -path "%apkFile%" -outdir ./ -contents googleplay;m360;wandoujia;tencent;baidu;taobao;xiaomi; -password 12345678
 echo.
 echo 按任意键退出……
 pause>nul

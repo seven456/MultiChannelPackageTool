@@ -15,7 +15,7 @@
  */
 package com.android.zgj.multiChannelPackageTool;
 
-import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,6 +29,7 @@ import java.security.Key;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.zip.ZipFile;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKeyFactory;
@@ -36,21 +37,22 @@ import javax.crypto.spec.DESKeySpec;
 import javax.crypto.spec.IvParameterSpec;
 
 /**
- * 多渠道打包工具；
+ * 多渠道打包工具；<br/>
+ * 利用的是Zip文件“可以添加comment（注释）”的数据结构特点，在文件的末尾写入任意数据，而不用重新解压zip文件（apk文件就是zip文件格式）；<br/>
  * 创建时间： 2014-12-16 18:56:29
  * @author zhangguojun
- * @version 1.0
+ * @version 1.1
  * @since JDK1.6 Android2.2
  */
 public class MCPTool {
 	/**
-	 * 数据结构体的魔数标记，类似于头标记
+	 * 数据结构体的签名标记
 	 */
-	private static final String MAGIC = "MCPT";
+	private static final String SIG = "MCPT";
 	/**
 	 * 数据结构的版本号
 	 */
-	private static final String VERSION_10 = "1.0";
+	private static final String VERSION_1_1 = "1.1";
 	/**
 	 * 数据编码格式
 	 */
@@ -59,32 +61,6 @@ public class MCPTool {
 	 * 加密用的IvParameterSpec参数
 	 */
 	private static final byte[] IV = new byte[] { 1, 3, 1, 4, 5, 2, 0, 1 };
-
-	/**
-	 * 读取数据结构的版本号
-	 * @param raf RandomAccessFile
-	 * @return 数组对象，[0] randomAccessFile.seek的index，[1] 数据结构的版本号
-	 * @throws IOException
-	 */
-	private static Object[] getVersion(RandomAccessFile raf) throws IOException {
-		String version = null;
-		byte[] bytesMagic = MAGIC.getBytes(CHARSET_NAME);
-		byte[] bytes = new byte[bytesMagic.length];
-		long index = raf.length();
-		index -= bytesMagic.length;
-		readFully(raf, index, bytes); // 读取Magic标记；
-		if (Arrays.equals(bytes, bytesMagic)) {
-			bytes = new byte[4];
-			index -= bytes.length;
-			readFully(raf, index, bytes); // 读取版本号长度；
-			int lengthVersion = streamToInt(bytes, 0);
-			index -= lengthVersion;
-			byte[] bytesVersion = new byte[lengthVersion];
-			readFully(raf, index, bytesVersion); // 读取内容；
-			version = new String(bytesVersion, CHARSET_NAME);
-		}
-		return new Object[] { index, version };
-	}
 
 	/**
 	 * 写入数据
@@ -105,24 +81,108 @@ public class MCPTool {
 	 * @throws Exception
 	 */
 	private static void write(File path, byte[] content, String password) throws Exception {
-		RandomAccessFile raf = new RandomAccessFile(path, "r");
-		String version = (String) getVersion(raf)[1];
-		raf.close();
-		if (version != null) {
-			throw new IllegalStateException("Data is exists, Repeated write is not recommended.");
+		ZipFile zipFile = new ZipFile(path);
+		boolean isIncludeComment = zipFile.getComment() != null;
+		zipFile.close();
+		if (isIncludeComment) {
+			throw new IllegalStateException("Zip comment is exists, Repeated write is not recommended.");
 		}
-		BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(path, true));
+		
 		boolean isEncrypt = password != null && password.length() > 0;
 		byte[] bytesContent = isEncrypt ? encrypt(password, content) : content;
-		byte[] bytesVersion = VERSION_10.getBytes(CHARSET_NAME);
-		bos.write(bytesContent); // 写入内容；
-		bos.write(intToStream(bytesContent.length)); // 写入内容长度；
-		bos.write(isEncrypt ? 1 : 0); // 写入是否加密标示；
-		bos.write(bytesVersion); // 写入版本号；
-		bos.write(intToStream(bytesVersion.length)); // 写入版本号长度；
-		bos.write(MAGIC.getBytes(CHARSET_NAME)); // 写入Magic标记；
-		bos.flush();
-		bos.close();
+		byte[] bytesVersion = VERSION_1_1.getBytes(CHARSET_NAME);
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		baos.write(bytesContent); // 写入内容；
+		baos.write(short2Stream((short) bytesContent.length)); // 写入内容长度；
+		baos.write(isEncrypt ? 1 : 0); // 写入是否加密标示；
+		baos.write(bytesVersion); // 写入版本号；
+		baos.write(short2Stream((short) bytesVersion.length)); // 写入版本号长度；
+		baos.write(SIG.getBytes(CHARSET_NAME)); // 写入SIG标记；
+		byte[] data = baos.toByteArray();
+		baos.close();
+		
+		// Zip文件末尾数据结构：{@see java.util.zip.ZipOutputStream.writeEND}
+		RandomAccessFile raf = new RandomAccessFile(path, "rw");
+		raf.seek(path.length() - 2); // comment长度是short类型
+		raf.write(short2Stream((short) data.length)); // 重新写入comment长度，注意Android apk文件使用的是ByteOrder.LITTLE_ENDIAN（小端序）；
+		raf.write(data);
+		raf.close();
+	}
+	
+	/**
+	 * 读取数据
+	 * @param path 文件路径
+	 * @param password 解密密钥
+	 * @return 被该工具写入的数据（如：渠道号）
+	 * @throws Exception
+	 */
+	private static byte[] read(File path, String password) throws Exception {
+		byte[] bytesContent = null;
+		byte[] bytesMagic = SIG.getBytes(CHARSET_NAME);
+		byte[] bytes = new byte[bytesMagic.length];
+		RandomAccessFile raf = new RandomAccessFile(path, "r");
+		Object[] versions = getVersion(raf);
+		long index = (long) versions[0];
+		String version = (String) versions[1];
+		if (VERSION_1_1.equals(version)) {
+			bytes = new byte[1];
+			index -= bytes.length;
+			readFully(raf, index, bytes); // 读取内容长度；
+			boolean isEncrypt = bytes[0] == 1;
+
+			bytes = new byte[2];
+			index -= bytes.length;
+			readFully(raf, index, bytes); // 读取内容长度；
+			int lengthContent = stream2Short(bytes, 0);
+
+			bytesContent = new byte[lengthContent];
+			index -= lengthContent;
+			readFully(raf, index, bytesContent); // 读取内容；
+
+			if (isEncrypt && password != null && password.length() > 0) {
+				bytesContent = decrypt(password, bytesContent);
+			}
+		}
+		raf.close();
+		return bytesContent;
+	}
+	
+	/**
+	 * 读取数据结构的版本号
+	 * @param raf RandomAccessFile
+	 * @return 数组对象，[0] randomAccessFile.seek的index，[1] 数据结构的版本号
+	 * @throws IOException
+	 */
+	private static Object[] getVersion(RandomAccessFile raf) throws IOException {
+		String version = null;
+		byte[] bytesMagic = SIG.getBytes(CHARSET_NAME);
+		byte[] bytes = new byte[bytesMagic.length];
+		long index = raf.length();
+		index -= bytesMagic.length;
+		readFully(raf, index, bytes); // 读取SIG标记；
+		if (Arrays.equals(bytes, bytesMagic)) {
+			bytes = new byte[2];
+			index -= bytes.length;
+			readFully(raf, index, bytes); // 读取版本号长度；
+			int lengthVersion = stream2Short(bytes, 0);
+			index -= lengthVersion;
+			byte[] bytesVersion = new byte[lengthVersion];
+			readFully(raf, index, bytesVersion); // 读取内容；
+			version = new String(bytesVersion, CHARSET_NAME);
+		}
+		return new Object[] { index, version };
+	}
+
+	/**
+	 * RandomAccessFile seek and readFully
+	 * @param raf
+	 * @param index
+	 * @param buffer
+	 * @throws IOException
+	 */
+	private static void readFully(RandomAccessFile raf, long index, byte[] buffer) throws IOException {
+		raf.seek(index);
+		raf.readFully(buffer);
 	}
 
 	/**
@@ -162,56 +222,6 @@ public class MCPTool {
 		} catch (Exception ignore) {
 		}
 		return null;
-	}
-
-	/**
-	 * 读取数据
-	 * @param path 文件路径
-	 * @param password 解密密钥
-	 * @return 被该工具写入的数据（如：渠道号）
-	 * @throws Exception
-	 */
-	private static byte[] read(File path, String password) throws Exception {
-		byte[] bytesContent = null;
-		byte[] bytesMagic = MAGIC.getBytes(CHARSET_NAME);
-		byte[] bytes = new byte[bytesMagic.length];
-		RandomAccessFile raf = new RandomAccessFile(path, "r");
-		Object[] versions = getVersion(raf);
-		long index = (long) versions[0];
-		String version = (String) versions[1];
-		if (VERSION_10.equals(version)) {
-			bytes = new byte[1];
-			index -= bytes.length;
-			readFully(raf, index, bytes); // 读取内容长度；
-			boolean isEncrypt = bytes[0] == 1;
-
-			bytes = new byte[4];
-			index -= bytes.length;
-			readFully(raf, index, bytes); // 读取内容长度；
-			int lengthContent = streamToInt(bytes, 0);
-
-			bytesContent = new byte[lengthContent];
-			index -= lengthContent;
-			readFully(raf, index, bytesContent); // 读取内容；
-
-			if (isEncrypt && password != null && password.length() > 0) {
-				bytesContent = decrypt(password, bytesContent);
-			}
-		}
-		raf.close();
-		return bytesContent;
-	}
-
-	/**
-	 * RandomAccessFile seek and readFully
-	 * @param raf
-	 * @param index
-	 * @param buffer
-	 * @throws IOException
-	 */
-	private static void readFully(RandomAccessFile raf, long index, byte[] buffer) throws IOException {
-		raf.seek(index);
-		raf.readFully(buffer);
 	}
 
 	/**
@@ -255,33 +265,31 @@ public class MCPTool {
 	}
 
 	/**
-	 * int转换成字节数组（小端序）
+	 * short转换成字节数组（小端序）
 	 * @param data
 	 * @return
 	 */
-	private static byte[] intToStream(int data) {
-		ByteBuffer buffer = ByteBuffer.allocate(4);
-		buffer.order(ByteOrder.LITTLE_ENDIAN);
-		buffer.putInt(data);
-		buffer.flip();
-		return buffer.array();
-	}
+	private static short stream2Short(byte[] stream, int offset) {
+        ByteBuffer buffer = ByteBuffer.allocate(2);
+        buffer.order(ByteOrder.LITTLE_ENDIAN);
+        buffer.put(stream[offset]);
+        buffer.put(stream[offset + 1]);
+        return buffer.getShort(0);
+    }
 
 	/**
-	 * 字节数组转换成int（小端序）
+	 * 字节数组转换成short（小端序）
 	 * @param stream
 	 * @param offset
 	 * @return
 	 */
-	private static int streamToInt(byte[] stream, int offset) {
-		ByteBuffer buffer = ByteBuffer.allocate(4);
-		buffer.order(ByteOrder.LITTLE_ENDIAN);
-		buffer.put(stream[offset]);
-		buffer.put(stream[offset + 1]);
-		buffer.put(stream[offset + 2]);
-		buffer.put(stream[offset + 3]);
-		return buffer.getInt(0);
-	}
+	private static byte[] short2Stream(short data) {
+        ByteBuffer buffer = ByteBuffer.allocate(2);
+        buffer.order(ByteOrder.LITTLE_ENDIAN);
+        buffer.putShort(data);
+        buffer.flip();
+        return buffer.array();
+    }
 
 	/**
 	 * nio高速拷贝文件
@@ -368,7 +376,7 @@ public class MCPTool {
 		} else {
 			if (args.length > 0) {
 				if (args.length == 1 && cmdVersion.equals(args[0])) {
-					System.out.println("version: " + VERSION_10);
+					System.out.println("version: " + VERSION_1_1);
 				} else {
 					Map<String, String> argsMap = new LinkedHashMap<String, String>();
 					for (int i = 0; i < args.length; i += 2) {
@@ -393,9 +401,9 @@ public class MCPTool {
 							System.out.println("contents: " + Arrays.toString(contents));
 						}
 						System.out.println("password: " + password);
-						if (contents == null || contents.length == 0) {
+						if (contents == null || contents.length == 0) { // 读取数据；
 							System.out.println("content: " + readContent(path, password));
-						} else {
+						} else { // 写入数据；
 							String fileName = path.getName();
 							int dot = fileName.lastIndexOf(".");
 							String prefix = fileName.substring(0, dot);
@@ -404,7 +412,6 @@ public class MCPTool {
 								File target = new File(outdir, prefix + "_" + content + suffix);
 								if (nioTransferCopy(path, target)) {
 									write(target, content, password);
-									System.out.println("Write finish, [" + content + "] to [" + target + "]");
 								}
 							}
 						}
