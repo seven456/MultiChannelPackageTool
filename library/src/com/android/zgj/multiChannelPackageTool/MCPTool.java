@@ -100,6 +100,9 @@ public class MCPTool {
 		baos.write(SIG.getBytes(CHARSET_NAME)); // 写入SIG标记；
 		byte[] data = baos.toByteArray();
 		baos.close();
+		if (data.length > Short.MAX_VALUE) {
+			throw new IllegalStateException("Zip comment length > 32767.");
+		}
 		
 		// Zip文件末尾数据结构：{@see java.util.zip.ZipOutputStream.writeEND}
 		RandomAccessFile raf = new RandomAccessFile(path, "rw");
