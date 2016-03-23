@@ -64,4 +64,57 @@
         }
     }
 
+/*
+    //以下为JAVA代码
+
+    //android读取php写入zip的comment
+
+    public static String readApk(Context context) throws IOException {
+
+        String path = context.getPackageCodePath();
+
+        System.out.println("path=" + path);
+
+        File file = new File(path);
+
+        byte[] bytes = null;
+        try {
+            RandomAccessFile accessFile = new RandomAccessFile(file, "r");
+            long index = accessFile.length();
+
+            bytes = new byte[2];
+            index = index - bytes.length;
+            accessFile.seek(index);
+            accessFile.readFully(bytes);
+
+            int contentLength = stream2Short(bytes, 0);
+
+            System.out.println("content length=" + contentLength);
+
+            if (contentLength == 0){
+                return null;
+            }
+
+            bytes = new byte[contentLength];
+            index = index - bytes.length;
+            accessFile.seek(index);
+            accessFile.readFully(bytes);
+
+            return new String(bytes, "utf-8");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static short stream2Short(byte[] stream, int offset) {
+        ByteBuffer buffer = ByteBuffer.allocate(2);
+        buffer.order(ByteOrder.LITTLE_ENDIAN);
+        buffer.put(stream[offset]);
+        buffer.put(stream[offset + 1]);
+        return buffer.getShort(0);
+    }
+ */
  ?>
