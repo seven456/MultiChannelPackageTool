@@ -42,7 +42,7 @@ import javax.crypto.spec.IvParameterSpec;
  * 创建时间： 2014-12-16 18:56:29
  * @author zhangguojun
  * @version 1.1
- * @since JDK1.6 Android2.2
+ * @since JDK1.7 Android2.2
  */
 public class MCPTool {
 	/**
@@ -359,8 +359,11 @@ public class MCPTool {
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
+//		写入渠道号
 //		args = "-path D:/111.apk -outdir D:/111/ -contents googleplay;m360; -password 12345678".split(" ");
+//		查看工具程序版本号
 //		args = "-version".split(" ");
+//		读取渠道号
 //		args = "-path D:/111_m360.apk -password 12345678".split(" ");
 
 		long time = System.currentTimeMillis();
