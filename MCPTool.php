@@ -8,7 +8,6 @@
     if ($argc != 3) {
         echo 'example: php MCPTool.php xx.apk comment';echo PHP_EOL;exit;
     }
-
     $path    = trim($argv[1]);
     $comment = trim($argv[2]);
 
