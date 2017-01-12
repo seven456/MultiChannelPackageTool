@@ -36,11 +36,11 @@ Android Multi channel package tool （安卓多渠道打包工具）
 	Android 7.0 引入一项新的应用签名方案 APK Signature Scheme v2
 	在build.gradle中添加“v2SigningEnabled false”即可；
 	signingConfigs {
-	      release {
-	       ...
- 	       v2SigningEnabled false
-  	      }
-	    }
+	release {
+		...
+		v2SigningEnabled false
+		}
+	}
         https://developer.android.com/about/versions/nougat/android-7.0.html#apk_signature_v2
 
 ## 如何使用
