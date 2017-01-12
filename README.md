@@ -32,6 +32,16 @@ Android Multi channel package tool （安卓多渠道打包工具）
 	如：加好友功能，下载前写入用户ID，用户下载后启动apk，读取写入的用户ID，完成加好友操作，用户体验大大提升，没有断裂感；
 	当然，也可以写入JSON数据，想做什么就做什么；
 	
+## 解决安装包损坏问题（Android 7.0版本适配）
+	Android 7.0 引入一项新的应用签名方案 APK Signature Scheme v2
+	在build.gradle中添加“v2SigningEnabled false”即可；
+	signingConfigs {
+	      release {
+	       ...
+ 	       v2SigningEnabled false
+  	      }
+	    }
+        https://developer.android.com/about/versions/nougat/android-7.0.html#apk_signature_v2
 
 ## 如何使用
 	1、命令行使用说明：
