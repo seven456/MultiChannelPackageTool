@@ -35,11 +35,11 @@ Android Multi channel package tool （安卓多渠道打包工具）
 ## 解决安装时报INSTALL_PARSE_FAILED_NO_CERTIFICATES错误问题（Android 7.0版本适配）
 	安装时的错误提示：Failed to install xxx.apk.1: Failure [INSTALL_PARSE_FAILED_NO_CERTIFICATES: Failed to collect certificates from   /data/app/xxx.tmp/base.apk.1 using APK Signature Scheme v2: SHA-256 digest of contents did not verify]
 	Android 7.0 引入一项新的应用签名方案 APK Signature Scheme v2
-	在build.gradle中添加“v2SigningEnabled false”即可；
+	在build.gradle中添加“v2SigningEnabled false”强制使用旧版签名；
 	signingConfigs {
 	release {
 		...
-		v2SigningEnabled false
+		v2SigningEnabled false // 使用旧版签名，禁用V2版签名模式，满足两个条件才需要此配置：“Gradle版本 >= 2.14.1”和“Android Gradle Plugin 版本 >= 2.2.0”
 		}
 	}
 	官方说明：https://developer.android.com/about/versions/nougat/android-7.0.html#apk_signature_v2
