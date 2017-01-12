@@ -42,7 +42,7 @@ Android Multi channel package tool （安卓多渠道打包工具）
 		v2SigningEnabled false
 		}
 	}
-	 [官方说明：https://developer.android.com/about/versions/nougat/android-7.0.html#apk_signature_v2](https://developer.android.com/about/versions/nougat/android-7.0.html#apk_signature_v2)
+	官方说明：https://developer.android.com/about/versions/nougat/android-7.0.html#apk_signature_v2
 
 ## 如何使用
 	1、命令行使用说明：
