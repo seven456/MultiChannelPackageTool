@@ -39,7 +39,7 @@ Android Multi channel package tool （安卓多渠道打包工具）
 	signingConfigs {
 	release {
 		...
-		v2SigningEnabled false // 使用旧版签名，禁用V2版签名模式，满足两个条件才需要此配置：“Gradle版本 >= 2.14.1”和“Android Gradle Plugin 版本 >= 2.2.0”
+		v2SigningEnabled false // 使用旧版签名，禁用V2版签名模式，同时满足两个条件才需要此配置：“Gradle版本 >= 2.14.1”和“Android Gradle Plugin 版本 >= 2.2.0”
 		}
 	}
 	官方说明：https://developer.android.com/about/versions/nougat/android-7.0.html#apk_signature_v2
