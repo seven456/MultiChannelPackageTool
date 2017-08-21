@@ -1,6 +1,11 @@
 # MultiChannelPackageTool
 Android Multi channel package tool （安卓多渠道打包工具）
 
+@deprecated 本工具以落后，推荐使用美团多渠道打包工具；
+APK Signature Scheme v2，新一代开源Android渠道包生成工具Walle：
+https://github.com/Meituan-Dianping/walle
+https://tech.meituan.com/android-apk-v2-signature-scheme.html
+
 ## 为什么需要这个工具
 	1、国内应用市场繁多，上线的apk应用需要知道自己在哪个渠道下载的；
 	2、简直是急速啊：5M的apk，1秒种能打300个；
