@@ -58,7 +58,7 @@ https://tech.meituan.com/android-apk-v2-signature-scheme.html
 	-password	加密密钥（可选），长度8位以上，如果没有该参数，不加密
 	-version	显示版本号
 	例如：
-	写入：java -jar MCPTool.jar -path D:/test.apk -outdir ./ -contents googleplay;m360; -password 12345678
+	写入：java -jar MCPTool.jar -path D:/test.apk -outdir ./ -contents "googleplay;m360;" -password 12345678
 	读取：java -jar MCPTool.jar -path D:/test.apk -password 12345678
 	
 	2、Android代码中读取写入的渠道号：
